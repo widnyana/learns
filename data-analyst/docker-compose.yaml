@@ -30,7 +30,7 @@ services:
       - bootcamp-da
 
   postgres:
-    image: postgres:15
+    image: postgres:16
     container_name: bootcamp-da-postgres
     restart: on-failure
     environment:
