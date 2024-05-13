@@ -1,0 +1,55 @@
+name: bootcamp-da
+
+networks:
+  bootcamp-da:
+    driver: bridge
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:8.0.29
+    platform: linux/amd64
+    cap_add:
+      - SYS_NICE
+    restart: "on-failure"
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3366:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: mysql --user=root --password=${MYSQL_ROOT_PASSWORD} -e 'select 1' ${MYSQL_DATABASE}
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bootcamp-da
+
+  postgres:
+    image: postgres:15
+    container_name: bootcamp-da-postgres
+    restart: on-failure
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 1s
+      timeout: 1s
+      retries: 30
+    volumes:
+      - "pg_data:/var/lib/postgresql/data/pgdata"
+    ports:
+      - "5433:5432"
+
+volumes:
+  mysql_data:
+    driver: local
+  pg_data:
+    driver: local
